@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>SwiggitySwaggity</title>
+        <audio id="audioElement" src="./wet.mp3"></audio>
+        <header name = "Access-Control-Allow-Origin" value = "*" />
+        <script type="text/javascript" src="d3/d3.v3.js"></script>
+        <style type = "text/css"></style>
+        
+        <style type="text/css">
+            body {
+                background-color: #3A3E3B;
+            }
+        </style>
+    </head>
+    <div>
+            <button onclick="document.getElementById('audioElement').play()">Play</button>
+            <button onclick="document.getElementById('audioElement').pause()">Pause</button>
+            <button onclick="document.getElementById('audioElement').volume+=0.1">Volume++</button>
+            <button onclick="document.getElementById('audioElement').volume-=0.1">Volume--</button>
+    </div>
+    <body>
+        
+        <script 
+        type="text/javascript">
+
+            var audioContext = new (window.AudioContext||window.webkitAudioContext);
+            var audioElement =  document.getElementById('audioElement');
+            audioElement.crossOrigin = "anonymous";
+            var audioSrc = audioContext.createMediaElementSource(audioElement);
+            var analyser = audioContext.createAnalyser();
+
+
+            audioSrc.connect(analyser);
+            audioSrc.connect(audioContext.destination);
+            var frequencyData = new Uint8Array(200);
+
+            var w = window.innerWidth;
+            var h = window.innerHeight;
+
+            var svgHeight = h;
+            var svgWidth = w;
+            var barPadding = '1';
+
+            
+           
+            
+            function createSvg(parent, height, width) {
+                return d3.select(parent).append('svg').attr('height', height).attr('width', width);
+            }
+
+            var svg = createSvg('body', svgHeight, svgWidth);
+                svg.selectAll('rect')
+                .data(frequencyData)
+                .enter()
+                .append('rect')
+                .attr('y', function (d, i) {
+                    return i * (svgHeight / frequencyData.length);
+                });
+            
+            var c1 = "#1B998B";
+            var c2 = "#48BEFF";
+            var c3 = "#16F3D0";
+            var c4 = "#429EA6";
+            var c5 = "#3DFAFF";
+
+
+            function colorScheme(d, i){
+                var y = d % 60;
+                var modA = d % 80;
+                var modB = d % 30;
+                var modI;
+                if ((i % 2) == 0){
+                    modI = (modA + i) % 50;
+                }
+                else{
+                    modI = (modA + (200 - i)) % 50;
+                }
+                var r = 220 + modI - i;
+                var g = 40;
+                var b = 140 + modB;
+                
+             
+                return "rgb(" + r + ', ' + g + ", " + b + ')'; 
+            }
+
+            function renderChart() {
+                requestAnimationFrame(renderChart);
+               // Copy frequency data to frequencyData array.
+                analyser.getByteFrequencyData(frequencyData);
+
+                var avgSum = 0;
+                svg.selectAll('rect')
+                .data(frequencyData)
+                .attr('x', function (d, i){
+                    return d * 1.8;
+                })
+                .attr('width', function(d, i) {
+                    if ((i % 2) == 0){
+                        return d * 4.8 - 90;
+                    }
+                    else{
+                        return svgWidth - (d * 4.8);
+                    }
+                })
+                .attr('height', function(d, i) {
+                    return 7 + (d % 10);
+                })
+                .attr('fill', function(d, i) {
+                    return colorScheme(d, i);
+                });
+
+            }
+
+
+            renderChart();
+
+
+
+
+           
+        </script>
+    </body>
+</html>     
